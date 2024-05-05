@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../Web Development"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"limits": "c"
+		},
+		"liveServer.settings.multiRootWorkspaceName": "Web Development"
+	}
+}

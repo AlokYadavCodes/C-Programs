@@ -1,0 +1,2 @@
+This will be written in the text file
+This is meant to be written in the writing.txt file
