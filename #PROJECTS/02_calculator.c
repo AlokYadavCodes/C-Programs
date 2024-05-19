@@ -65,7 +65,8 @@ int main()
         break;        
         }
         
-        if(!isnan(result)){
+        //we can't compare NAN with any number i.e: if(result==NAN) will not work (always false). We have to use isnan() function
+        if(!isnan(result)){          //isnan function provided by math.h
             printf("\nResult of operation is: %0.2lf ",result);
         }
     }

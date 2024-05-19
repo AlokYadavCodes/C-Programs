@@ -7,8 +7,8 @@ int main()
     printf("\n-----Welcome to the number guessing game-----\n");
     srand(time(NULL));
     int lowerlimit=1;
-    int upperlimit=99;
-    int num=rand()%upperlimit+lowerlimit;
+    int upperlimit=100;
+    int num=(rand()%(upperlimit-lowerlimit))+lowerlimit;  //lowerlimit-> inclusive || upperlimit-> exclusive
     int count=0;
     int gNum;
     while(1)
