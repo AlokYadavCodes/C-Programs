@@ -3,10 +3,12 @@
 #include <stdlib.h>
 #define MAX_NUMBER_OF_CUSTOMERS 500
 #define ACC_NO_STARTS_FROM 1000
-#define NAME_LIMIT 4+1+1  //+1 for null character and another +1 for checking limit
-#define PASSWORD_LIMIT 30+1+1
+#define NAME_MAX_LIMIT 20+1+1  //+1 for null character and another +1 for checking limit
+#define PASSWORD_MAX_LIMIT 15+1+1
+#define PASSWORD_MIN_LIMIT 8
+
 typedef struct{
-    char name[NAME_LIMIT];  
+    char name[NAME_MAX_LIMIT];  
     int accNo;
     long long int contact;
     char* password;
@@ -15,9 +17,9 @@ typedef struct{
 Customer customers[MAX_NUMBER_OF_CUSTOMERS];
 int customerCount=0;
 
-void login();
 void createAccount();
-void depositeMoney(int customerIndex);
+void login();
+void depositMoney(int customerIndex);
 void withdrawMoney(int customerIndex);
 void checkBalance(int customerIndex);
 void forgotAccountNo();
@@ -26,20 +28,23 @@ int authenticate();
 char* setPassword();
 long long int setContact();
 void clearScreen();
+void displayGoBack();
 
 
 
 int main(){
-    clearScreen();
     while(1){
-        printf("\n\n*** Bank Management System ***");
+        clearScreen();
+        printf("\n\n-------------------------------------------------------");
+        printf("\n       *** Welcome to the India's No. 1 Bank ***");
+        printf("\n-------------------------------------------------------");
         printf("\n1.Create New Account");
         printf("\n2.Login");
         printf("\n3.Forgot Account Number?");
         printf("\n4.Forgot Password?");
         printf("\n5.Exit ");
 
-        printf("\n\nSelect option:");
+        printf("\n\nSelect option: ");
         int option;
         scanf("%d",&option);
 
@@ -59,7 +64,7 @@ int main(){
             break;
         case 5:
             printf("\nThank you for using our services.");
-            exit(1);
+            return 0;
         default:
             printf("\nInvalid option! Try again");
             break;
@@ -71,13 +76,14 @@ int main(){
 void createAccount(){
     clearScreen();
     Customer newCustomer;
+    printf("\n--------- Create New Account ---------\n");
     printf("\nEnter your name: ");
     while(1){
         fflush(stdin);
-        fgets(newCustomer.name,NAME_LIMIT,stdin);
+        fgets(newCustomer.name,NAME_MAX_LIMIT,stdin);
         newCustomer.name[strcspn(newCustomer.name,"\n")]='\0';
-        if(strcspn(newCustomer.name,"\0")==NAME_LIMIT-1){
-            printf("Maximum limit exceeds!\nPlease enter a shorter name: ");
+        if(strcspn(newCustomer.name,"\0")==NAME_MAX_LIMIT-1){
+            printf("\nName is too long! \nPlease enter your name (max %d characters): ",NAME_MAX_LIMIT-2);
         }
         else break;
     }
@@ -85,12 +91,12 @@ void createAccount(){
     newCustomer.accNo=ACC_NO_STARTS_FROM+customerCount;
     newCustomer.balance=0;
     while(1){
-        printf("Enter you contact number: ");
+        printf("Enter your contact number: ");
         long long int contact=setContact();
         int isAlreadylinked=0;
         for(int i=0;i<customerCount;i++){
             if(contact==customers[i].contact){
-                printf("\nContact number is already linked to another account. Use a different contact number");
+                printf("\nError: Contact number is already linked to another account. Use a different contact number\n");
                 isAlreadylinked=1;
             }
         }
@@ -108,25 +114,26 @@ void createAccount(){
     printf("\nName: %s",newCustomer.name);
     printf("\nAccount Number: %lld",newCustomer.accNo);
     printf("\nContact Number: %lld",newCustomer.contact);
+    displayGoBack();
 }
 
 void login(){
     int customerIndex=authenticate();
     if (customerIndex==-1) return;
-    clearScreen();
     while(1){
+        clearScreen();
         printf("\n\nWelcome back %s,\n --------LOGIN DASHBOARD--------\n ",customers[customerIndex].name);
-        printf("\n1.Deposite Money");
+        printf("\n1.Deposit Money");
         printf("\n2.Withdraw Money");
         printf("\n3.Check Balance ");
         printf("\n4.Logout");
         printf("\nSelect option: ");
-        int choice;
-        scanf("%d",&choice);
-        switch (choice)
+        int option;
+        scanf("%d",&option);
+        switch (option)
         {
         case 1:
-            depositeMoney(customerIndex);
+            depositMoney(customerIndex);
             break;
         case 2:
             withdrawMoney(customerIndex);
@@ -135,6 +142,8 @@ void login(){
             checkBalance(customerIndex);
             break;
         case 4:
+            printf("\nLogged Out!");
+            displayGoBack();
             return;
         
         default:
@@ -143,7 +152,7 @@ void login(){
     }
 }
 
-void depositeMoney(int customerIndex){
+void depositMoney(int customerIndex){
     long long int amt;
     while(1){
         printf("\nEnter the amount to deposit: ");
@@ -154,7 +163,8 @@ void depositeMoney(int customerIndex){
         else break;
     }
     customers[customerIndex].balance+=amt;
-    printf("Amount deposited successfully! \nNew balance is: %lld ",customers[customerIndex].balance);
+    printf("%lld has been deposited to your account! \nNew balance is: %lld ",amt,customers[customerIndex].balance);
+    displayGoBack();
 }
 
 void withdrawMoney(int customerIndex){
@@ -185,18 +195,20 @@ void withdrawMoney(int customerIndex){
         }
     }
     customers[customerIndex].balance-=amt;
-    printf("\n%lld has been debited. \nRemaining balance is: %d ",amt,customers[customerIndex].balance);
+    printf("\n%lld has been debited from your account. \nRemaining balance is: %d ",amt,customers[customerIndex].balance);
+    displayGoBack();
 }
 
 void checkBalance(int customerIndex){
     printf("\nYour account balance is: %lld ",customers[customerIndex].balance);
+    displayGoBack();
 }
 
 void forgotAccountNo(){
     clearScreen();
     printf("\n--------- Retrieve Account Number ---------\n");
     long long int contact;
-    printf("Enter contact number associated with your account: ");
+    printf("\nEnter contact number associated with your account: ");
     contact=setContact();
     int contactIndex=-1;
     for(int i=0;i<customerCount;i++){
@@ -207,16 +219,19 @@ void forgotAccountNo(){
     }
     if(contactIndex==-1){
         printf("%lld is not linked to any account.",contact);
+        displayGoBack();
         return;
     }
-    printf("Enter password: ");
+    printf("\nEnter password: ");
     char *password=setPassword();
     if(strcmp(password,customers[contactIndex].password)!=0){
         printf("Incorrect Password!");
+        displayGoBack();
         return;
     }
     int accNo=customers[contactIndex].accNo;
     printf("\nYour account number is: %d",accNo);
+    displayGoBack();
 }
 
 void forgotPassword(){
@@ -227,7 +242,7 @@ void forgotPassword(){
     scanf("%lld",&accNo);
     printf("\nEnter contact number associated with the account: ");
     long long int contact;
-    scanf("%lld",&contact);
+    contact=setContact();
     int accNoIndex=-1;
     for(int i=0;i<customerCount;i++){
         if(accNo==customers[i].accNo){
@@ -237,24 +252,30 @@ void forgotPassword(){
     }
     if(accNoIndex==-1){
         printf("\nAccount number does not exists!");
+        displayGoBack();
         return;
     }
     if(contact!=customers[accNoIndex].contact){
         printf("\nIncorrect contact number");
+        displayGoBack();
         return;
     }
-    printf("\nVerification Successful!");
+    printf("\nVerification Successful!\n");
     printf("\nEnter a new password: ");
     char *password=setPassword();
     customers[accNoIndex].password=password;
     printf("\nPassword changed successfully!");
+    displayGoBack();
 }
 
-int authenticate(){    
+int authenticate(){
+    fflush(stdin);
     int accNo;
+    clearScreen();
+    printf("\n--------- Login ---------\n");
     printf("\nEnter account number: ");
     scanf("%d",&accNo);
-    printf("\nEnter password: ");
+    printf("Enter password: ");
     char* password=setPassword();
     int accNoIndex=-1;
     for(int i=0;i<customerCount;i++){
@@ -283,28 +304,34 @@ int authenticate(){
     if(strcmp(password,customers[accNoIndex].password)!=0){
         printf("\nIncorrect Password!");
         printf("\n1.Forgot Password?");
-        printf("n2.Try Again (default)");
-        printf("Enter an option: ");
+        printf("\n2.Try Again (default)");
+        printf("\nEnter an option: ");
         int option;
+        scanf("%d",&option);
         switch (option){
         case 1:
-            // forgotPassword();
+            forgotPassword();
+            return -1;
             break;
         default:
-            authenticate();
+            return authenticate();
         }
     }
     return accNoIndex;
 }
 
 char* setPassword(){
-    char *password=(char*)malloc(PASSWORD_LIMIT*sizeof(char));
+    char *password=(char*)malloc(PASSWORD_MAX_LIMIT*sizeof(char));
     while(1){
         fflush(stdin);
-        fgets(password,PASSWORD_LIMIT,stdin);
+        fgets(password,PASSWORD_MAX_LIMIT,stdin);
         password[strcspn(password,"\n")]='\0';
-        if(strcspn(password,"\0")==PASSWORD_LIMIT-1){
-            printf("Maximum limit exceeds!\nPlease enter a shorter password: ");
+        //checking for minimum length
+        if(strlen(password)<PASSWORD_MIN_LIMIT){
+            printf("\nPassword is too short! \nPlease enter a password (min %d characters): ",PASSWORD_MIN_LIMIT);
+        }
+        else if(strcspn(password,"\0")==PASSWORD_MAX_LIMIT-1){
+            printf("\nPassword is too long!\nPlease enter a password (max %d characters): ",PASSWORD_MAX_LIMIT-2);
         }
         else break;
     }    
@@ -329,4 +356,10 @@ void clearScreen(){
     #else  //for linux, mac
         system("clear");
     #endif
+}
+
+void displayGoBack(){
+    printf("\n\n<-- Press ENTER to go back ");
+    fflush(stdin);
+    getchar();
 }
